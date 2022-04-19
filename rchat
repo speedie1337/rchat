@@ -27,7 +27,7 @@ RCHAT_INIT()
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
   NAME="rchat" # rchat.. simple as that
-  VERSION="0.2-19/04/2022" # Version of rchat
+  VERSION="0.2-19/04/2022-r2" # Version of rchat
   NICK="anon" # Default nickname is anon
   ls /tmp/rchat-nick>/dev/null && NICK=$(cat /tmp/rchat-nick)
   MODE=NORMAL
@@ -35,6 +35,9 @@ RCHAT_INIT()
   curl -so /tmp/rchat-msg $RCHAT_URL > /dev/null
   ls /tmp/rchat-joined>/dev/null || RCHAT_STARTER_HEADER
   . ~/.config/rchat/rchatrc>/dev/null
+  case "$(echo $EDITOR)" in
+  "") EDITOR=vim ;;
+  esac
   RCHAT_GREP_MESSAGES
 }
 
@@ -69,7 +72,7 @@ RCHAT_CAT_MESSAGES()
 
 printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
 printf "===============================================================================\n"
-printf "${COLOR_04}Instance: $INSTANCE${COLOR_01}\n"
+printf "${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
 printf "===============================================================================\n"
 }
 
@@ -164,6 +167,7 @@ RCHAT_CHANGELOG()
   printf "rchat 0.1-2022-04-18: Initial release"
   printf "\nrchat 0.1-2022-04-18-r2: Added color support, writing messages in \$EDITOR and config file"
   printf "\nrchat 0.2-2022-04-19: Added custom instance support and fixed sysop garbage being printed when it shouldn't. Also performed other minor improvements."
+  printf "\nrchat 0.2-2022-04-19-r2: Small aesthetic tweaks and defined \$EDITOR if it wasn't already."
 }
 
 RCHAT_CHECK_MODE()
