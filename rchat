@@ -16,7 +16,10 @@ RCHAT_EXIT()
 
 RCHAT_INIT()
 {
-  LINECOUNT=40p # How many lines to print
+  DEFAULT_INSTANCE="https://donut.gq/rautafarmi"
+  cat /tmp/rchat-instance > /dev/null || printf "$DEFAULT_INSTANCE" > /tmp/rchat-instance
+  INSTANCE=$(cat /tmp/rchat-instance)
+  LINECOUNT=40 # How many lines to print
   COLOR_01="$(printf '\033[0m')" # White
   COLOR_02="$(printf '\033[1;33m')" # Yellow
   COLOR_03="$(printf '\033[0;35m')" # Purple
@@ -24,11 +27,11 @@ RCHAT_INIT()
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
   NAME="rchat" # rchat.. simple as that
-  VERSION="0.1-18/04/2022-r2" # Version of rchat
+  VERSION="0.2-19/04/2022" # Version of rchat
   NICK="anon" # Default nickname is anon
   ls /tmp/rchat-nick>/dev/null && NICK=$(cat /tmp/rchat-nick)
   MODE=NORMAL
-  RCHAT_URL="https://donut.gq/rautafarmi/messages.txt"
+  RCHAT_URL="$INSTANCE/messages.txt"
   curl -so /tmp/rchat-msg $RCHAT_URL > /dev/null
   ls /tmp/rchat-joined>/dev/null || RCHAT_STARTER_HEADER
   . ~/.config/rchat/rchatrc>/dev/null
@@ -39,13 +42,18 @@ RCHAT_STARTER_HEADER()
 {
   clear
   printf "$NAME $VERSION\n===============================================================================\n\n"
-  printf "Welcome to $NAME $VERSION. $NAME is a rautafarmi chat client with Vim keybinds."
-  printf "\n${COLOR_04}To join, type ':j rautafarmi'.\n"
+  printf "${COLOR_02}Last login: $(date '+%Y/%m/%d at %T')${COLOR_01}"
+  printf "\n\nWelcome to $NAME $VERSION. $NAME is a rautafarmi chat client with Vim keybinds."
+  printf "\n${COLOR_04}To join, type ':j'.\n"
   printf "\n${COLOR_02}rchat is licensed under the GNU GPLv3 license. Client written by speedie & potential contributors, rautafarmi is owned by donut.gq.\n${COLOR_01}"
+  printf "\n${COLOR_03}To change instance, type ':set instance' and then enter your instance URL."
+  printf "\n${COLOR_06}Type ':set instance default' to change it back.\n\n${COLOR_01}"
   read starter_command
   case "$starter_command" in
   ":q") RCHAT_EXIT ;;
-  ":j rautafarmi") touch /tmp/rchat-joined && RCHAT_INIT ;;
+  ":j") touch /tmp/rchat-joined && RCHAT_INIT ;;
+  ":set instance") echo -n "Enter your instance: " ; read CUSTOM_INSTANCE ; printf "$CUSTOM_INSTANCE" > /tmp/rchat-instance && printf "\n${COLOR_06}000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nSet instance to $CUSTOM_INSTANCE.${COLOR_01}" && sleep 3 && ${0} && RCHAT_EXIT ;;
+  ":set instance default") echo $DEFAULT_INSTANCE > /tmp/rchat-instance && printf "${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nSet instance to default.${COLOR_01}" && sleep 3 && ${0} && RCHAT_EXIT ;;
   esac
   ls /tmp/rchat-joined>/dev/null || ${0} && RCHAT_EXIT
 }
@@ -57,9 +65,11 @@ RCHAT_HEADER()
 
 RCHAT_CAT_MESSAGES()
 {
-  RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|")
+  RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|")
 
 printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
+printf "===============================================================================\n"
+printf "${COLOR_04}Instance: $INSTANCE${COLOR_01}\n"
 printf "===============================================================================\n"
 }
 
@@ -75,8 +85,8 @@ RCHAT_GREP_MESSAGES()
 
 RCHAT_SEND_MESSAGE()
 {
-  curl -sX POST https://donut.gq/rautafarmi/post.php -F "name=$NICK" -F "msg=$RCHAT_SEND_MESSAGE" > /dev/null
-  ls /tmp/rchat-editor-message> /dev/null && curl -sX POST https://donut.gq/rautafarmi/post.php -F "name=$NICK" -F "msg=$(cat /tmp/rchat-editor-message)" > /dev/null
+  curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$RCHAT_SEND_MESSAGE" > /dev/null
+  ls /tmp/rchat-editor-message> /dev/null && curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$(cat /tmp/rchat-editor-message)" > /dev/null
   rm -f /tmp/rchat-editor-message>/dev/null
   clear
   ${0} && RCHAT_EXIT
@@ -153,6 +163,7 @@ RCHAT_CHANGELOG()
 {
   printf "rchat 0.1-2022-04-18: Initial release"
   printf "\nrchat 0.1-2022-04-18-r2: Added color support, writing messages in \$EDITOR and config file"
+  printf "\nrchat 0.2-2022-04-19: Added custom instance support and fixed sysop garbage being printed when it shouldn't. Also performed other minor improvements."
 }
 
 RCHAT_CHECK_MODE()
