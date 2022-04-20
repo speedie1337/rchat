@@ -3,15 +3,9 @@
 # Simple rautafarmi chat client
 # Licensed under GNU GPLv3.
 
-# This will be used if something fails
-RCHAT_DIE()
-{
-  printf "Died due to $EXITCODE" && exit 1
-}
-
 RCHAT_EXIT()
 {
-  rm -f /tmp/rchat-joined>/dev/null ; clear ; exit 0
+  rm -f /tmp/rchat-joined /tmp/rchat-editor-message ; clear ; exit 0
 }
 
 RCHAT_INIT()
@@ -21,21 +15,21 @@ RCHAT_INIT()
   INSTANCE=$(cat /tmp/rchat-instance)
   LINECOUNT=40 # How many lines to print
   COLOR_01="$(printf '\033[0m')" # White
-  COLOR_02="$(printf '\033[1;33m')" # Yellow
+  COLOR_02="$(printf '\033[0;33m')" # Yellow
   COLOR_03="$(printf '\033[0;35m')" # Purple
   COLOR_04="$(printf '\033[0;36m')" # Blue
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
   NAME="rchat" # rchat.. simple as that
-  VERSION="0.2-19/04/2022-r2" # Version of rchat
+  VERSION="0.3-20/04/2022" # Version of rchat
   NICK="anon" # Default nickname is anon
-  ls /tmp/rchat-nick>/dev/null && NICK=$(cat /tmp/rchat-nick)
+  ls /tmp/rchat-nick > /dev/null && NICK=$(cat /tmp/rchat-nick)
   MODE=NORMAL
   RCHAT_URL="$INSTANCE/messages.txt"
-  curl -so /tmp/rchat-msg $RCHAT_URL > /dev/null
-  ls /tmp/rchat-joined>/dev/null || RCHAT_STARTER_HEADER
+  curl -so /tmp/rchat-msg "$RCHAT_URL" > /dev/null
+  ls /tmp/rchat-joined > /dev/null || RCHAT_STARTER_HEADER
   . ~/.config/rchat/rchatrc>/dev/null
-  case "$(echo $EDITOR)" in
+  case "$EDITOR" in
   "") EDITOR=vim ;;
   esac
   RCHAT_GREP_MESSAGES
@@ -68,8 +62,7 @@ RCHAT_HEADER()
 
 RCHAT_CAT_MESSAGES()
 {
-  RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|")
-
+  RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|" | sed "s|<span style='color: #789922;'>||")
 printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
 printf "===============================================================================\n"
 printf "${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
@@ -82,15 +75,17 @@ RCHAT_GREP_MESSAGES()
   RCHAT_HEADER # Print the header/banner
   RCHAT_CAT_MESSAGES # Print the messages
   RCHAT_FOOTER # Print the footer/banner
-  printf "$MODE \n" # Print the default mode
+  printf " $MODE \n" # Print the default mode
   RCHAT_CHECK_UPDATE
 }
 
 RCHAT_SEND_MESSAGE()
 {
-  curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$RCHAT_SEND_MESSAGE" > /dev/null
-  ls /tmp/rchat-editor-message> /dev/null && curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$(cat /tmp/rchat-editor-message)" > /dev/null
-  rm -f /tmp/rchat-editor-message>/dev/null
+  case "$RCHAT_MESSAGE_TYPE" in
+  "editor") curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$(cat /tmp/rchat-editor-message)" > /dev/null ;;
+  "normal") curl -sX POST $INSTANCE/post.php -F "name=$NICK" -F "msg=$RCHAT_SEND_MESSAGE" > /dev/null ;;
+  esac
+  printf "${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nMessage '$RCHAT_SEND_MESSAGE' sent. ${COLOR_01}" && sleep 0.5
   clear
   ${0} && RCHAT_EXIT
 }
@@ -115,14 +110,14 @@ RCHAT_GREP_MESSAGES()
   clear
   RCHAT_HEADER # Print the header/banner
   RCHAT_CAT_MESSAGES # Print the messages
-  printf "$MODE " # Print the default mode
+  printf " $MODE " # Print the default mode
   RCHAT_CHECK_UPDATE
 }
 
 RCHAT_INSERT()
 {
   clear && RCHAT_HEADER && RCHAT_CAT_MESSAGES
-  echo -n "$MODE > " && read RCHAT_SEND_MESSAGE
+  echo -n "$MODE > " && read RCHAT_SEND_MESSAGE && RCHAT_MESSAGE_TYPE=normal
   RCHAT_SEND_MESSAGE ; ${0} && RCHAT_EXIT
 }
 
@@ -142,24 +137,32 @@ RCHAT_CMD()
   "q") RCHAT_EXIT ;;
   "h") RCHAT_HELP | less ;;
   "r") ${0} && RCHAT_EXIT ;;
-  "nick") read NICK && echo $NICK > /tmp/rchat-nick && ${0} && RCHAT_EXIT ;;
-  "!") read RCHAT_SHELL_COMMAND && /bin/sh -c $RCHAT_SHELL_COMMAND && ${0} && RCHAT_EXIT ;;
+  "set nick") echo -n "Enter nick: " && read NICK && echo $NICK > /tmp/rchat-nick && ${0} && RCHAT_EXIT ;;
+  "!") echo -n "What shell command should run? " && read RCHAT_SHELL_COMMAND && /bin/sh -c "$RCHAT_SHELL_COMMAND" && ${0} && RCHAT_EXIT ;;
   "changelog") RCHAT_CHANGELOG | less ;;
-  "e") $EDITOR /tmp/rchat-editor-message && RCHAT_SEND_MESSAGE ;;
+  "news") RCHAT_NEWS | less ;;
+  "instance") RCHAT_INSTANCE_LIST | less ;;
+  "e") $EDITOR /tmp/rchat-editor-message && RCHAT_MESSAGE_TYPE=editor && RCHAT_SEND_MESSAGE ;;
   esac
   ${0} && RCHAT_EXIT
 }
 
 RCHAT_HELP()
 {
-  printf "Rchat is a chat client with Vim keybinds. To enter text, press I at any time."
-  printf "When you initially run it *from a terminal*, you need to join. You can do this by running :j rautafarmi\n"
-  printf "\nOr you can run commands using by pressing : and then entering the command you want"
-  printf "\nIf you wanna run a terminal command, type ':!'."
-  printf "\nTo see the help screen, do ':h'."
-  printf "\nTo change your nickname from '$NICK' to anything you want, ':nick'."
-  printf "\nTo see the changelog, type ':changelog'."
-  printf "\nTo type out a message in your defined $EDITOR, type ':e'."
+  printf "rchat help | Use hjkl to read\n\n"
+  printf "rchat is a chat client with Vim keybinds. To enter text, press I at any time.\n"
+  printf "When you initially run it from a terminal, you need to join.\n"
+  printf "Joining is done using a command. Commands in rchat are used similar to Vim. This means most commands start with ':'.\n" 
+  printf "Below is a list of all commands.\n\n"
+  printf "To join the set instance, type ':j'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
+  printf "\n- To set an instance (Otherwise the default will be used), type ':set instance'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
+  printf "\n- If you wanna run a terminal command, type ':!'."
+  printf "\n- To see the help screen, do ':h'."
+  printf "\n- To change your nickname from '$NICK' to anything you want, ':set nick'."
+  printf "\n- To see the changelog, type ':changelog'."
+  printf "\n- To type out a message in your defined $EDITOR, type ':e'."
+  printf "\n- To see a list of popular instances, type ':instance'."
+  printf "\n- To download and see news, type ':news'."
 }
 
 RCHAT_CHANGELOG()
@@ -168,6 +171,19 @@ RCHAT_CHANGELOG()
   printf "\nrchat 0.1-2022-04-18-r2: Added color support, writing messages in \$EDITOR and config file"
   printf "\nrchat 0.2-2022-04-19: Added custom instance support and fixed sysop garbage being printed when it shouldn't. Also performed other minor improvements."
   printf "\nrchat 0.2-2022-04-19-r2: Small aesthetic tweaks and defined \$EDITOR if it wasn't already."
+  printf "\nrchat 0.3-2022-04-20: Removed more trash present in some instances, added :news and :instance commands and other small tweaks."
+}
+
+RCHAT_NEWS()
+{
+  curl -so /tmp/rchat-news https://raw.githubusercontent.com/speediegamer/rchat/main/rchat-news  
+  cat /tmp/rchat-news | less
+}
+
+RCHAT_INSTANCE_LIST()
+{
+  curl -so /tmp/rchat-instance-list https://raw.githubusercontent.com/speediegamer/rchat/main/rchat-instance-list
+  cat /tmp/rchat-instance-list | less
 }
 
 RCHAT_CHECK_MODE()
