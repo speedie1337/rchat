@@ -8,11 +8,13 @@ Download the latest binary and copy it to /usr/bin. Then simply make it executab
 
 ## Keybinds
 - :j // Join
-- :! <command> // Run a shell command using /bin/sh
-- :nick // Set your nick (Default: anon)
+- :! // Run a shell command using /bin/sh
+- :set nick // Set your nick (Default: anon)
 - :e // Edit a message in your defined $EDITOR
 - :changelog // See the changelog
 - :help // Get help
+- :news // Read news
+- :instance // Find cool instances
 
 ## Credits
 - donut.gq // rautafarmi
