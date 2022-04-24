@@ -1,2 +1,19 @@
 rchat news
 This file will be regularly updated. You can read using rchat 0.3 and newer itself by running :news.
+
+Title: rchat can now be downloaded and installed using package managers
+Date: 24/04/2022
+
+Yes, that's right. rchat is now available for download through the Arch Linux AUR if you're using Arch Linux or any distributions based on it.
+It's also available on Gentoo through my overlay. If you wanna add my overlay and install rchat, run the following command as root:
+
+'layman -o https://raw.githubusercontent.com/spoverlay/splay/main/splay.xml -f -a splay'
+
+Then you can just 'emerge rchat' like any other package.
+For Arch Linux, you'll install it like any other AUR package or using an AUR helper. If you're using yay,
+
+'yay -S rchat'
+
+Do not run it as root. That's it, have a good day!
+
+============================================================================================================
