@@ -21,17 +21,33 @@ RCHAT_INIT()
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
   NAME="rchat" # rchat.. simple as that
-  VERSION="0.3-20/04/2022" # Version of rchat
-  NICK="anon" # Default nickname is anon
-  ls /tmp/rchat-nick > /dev/null && NICK=$(cat /tmp/rchat-nick)
+  VERSION="0.4-24/04/2022" # Version of rchat
+  
+  # Check what to set the nick to
+  if [[ -f "/tmp/rchat-nick" ]]; then
+		NICK=$(cat /tmp/rchat-nick)
+  else
+		NICK="anon"
+  fi
+  
   MODE=NORMAL
   RCHAT_URL="$INSTANCE/messages.txt"
+  
+  # Download all messages from the instance
   curl -so /tmp/rchat-msg "$RCHAT_URL" > /dev/null
-  ls /tmp/rchat-joined > /dev/null || RCHAT_STARTER_HEADER
-  . ~/.config/rchat/rchatrc>/dev/null
-  case "$EDITOR" in
-  "") EDITOR=vim ;;
-  esac
+  
+  # Check if an existing session is active
+  if [[ -f "/tmp/rchat-joined" ]]; then
+		printf "Existing session exists, joining.."
+  else
+		RCHAT_STARTER_HEADER
+  fi
+ 
+  # Check if an editor is defined, if not set it to vim
+  if [[ "$EDITOR" = "" ]]; then
+		EDITOR=vim
+  fi
+
   RCHAT_GREP_MESSAGES
 }
 
@@ -44,7 +60,8 @@ RCHAT_STARTER_HEADER()
   printf "\n${COLOR_04}To join, type ':j'.\n"
   printf "\n${COLOR_02}rchat is licensed under the GNU GPLv3 license. Client written by speedie & potential contributors, rautafarmi is owned by donut.gq.\n${COLOR_01}"
   printf "\n${COLOR_03}To change instance, type ':set instance' and then enter your instance URL."
-  printf "\n${COLOR_06}Type ':set instance default' to change it back.\n\n${COLOR_01}"
+  printf "\n${COLOR_06}Type ':set instance default' to change it back.${COLOR_01}"
+  printf "\nType ':q' to quit.\n"
   read starter_command
   case "$starter_command" in
   ":q") RCHAT_EXIT ;;
@@ -52,7 +69,11 @@ RCHAT_STARTER_HEADER()
   ":set instance") echo -n "Enter your instance: " ; read CUSTOM_INSTANCE ; printf "$CUSTOM_INSTANCE" > /tmp/rchat-instance && printf "\n${COLOR_06}000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nSet instance to $CUSTOM_INSTANCE.${COLOR_01}" && sleep 3 && ${0} && RCHAT_EXIT ;;
   ":set instance default") echo $DEFAULT_INSTANCE > /tmp/rchat-instance && printf "${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nSet instance to default.${COLOR_01}" && sleep 3 && ${0} && RCHAT_EXIT ;;
   esac
-  ls /tmp/rchat-joined>/dev/null || ${0} && RCHAT_EXIT
+  if [[ -f "/tmp/rchat-joined" ]]; then
+		printf "Joining"
+  else
+		${0} && RCHAT_EXIT
+  fi
 }
 
 RCHAT_HEADER()
@@ -64,6 +85,7 @@ RCHAT_CAT_MESSAGES()
 {
   RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|" | sed "s|<span style='color: #789922;'>||")
 printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
+printf "\n$INSTANCE $(date '+%Y/%m/%d/%T')\n===================================================\n$RCHAT_FULL_MESSAGE_DATA" >> /tmp/rchat-history
 printf "===============================================================================\n"
 printf "${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
 printf "===============================================================================\n"
@@ -139,6 +161,8 @@ RCHAT_CMD()
   "r") ${0} && RCHAT_EXIT ;;
   "set nick") echo -n "Enter nick: " && read NICK && echo $NICK > /tmp/rchat-nick && ${0} && RCHAT_EXIT ;;
   "!") echo -n "What shell command should run? " && read RCHAT_SHELL_COMMAND && /bin/sh -c "$RCHAT_SHELL_COMMAND" && ${0} && RCHAT_EXIT ;;
+  "history") less /tmp/rchat-history ; ${0} && RCHAT_EXIT ;;
+  "history clear") rm /tmp/rchat-history ; ${0} && RCHAT_EXIT ;;
   "changelog") RCHAT_CHANGELOG | less ;;
   "news") RCHAT_NEWS | less ;;
   "instance") RCHAT_INSTANCE_LIST | less ;;
@@ -163,6 +187,8 @@ RCHAT_HELP()
   printf "\n- To type out a message in your defined $EDITOR, type ':e'."
   printf "\n- To see a list of popular instances, type ':instance'."
   printf "\n- To download and see news, type ':news'."
+  printf "\n- To see a full list of all messages downloaded combined, type ':history'."
+  printf "\n- To clear the saved history, type ':history clear'."
 }
 
 RCHAT_CHANGELOG()
@@ -172,18 +198,21 @@ RCHAT_CHANGELOG()
   printf "\nrchat 0.2-2022-04-19: Added custom instance support and fixed sysop garbage being printed when it shouldn't. Also performed other minor improvements."
   printf "\nrchat 0.2-2022-04-19-r2: Small aesthetic tweaks and defined \$EDITOR if it wasn't already."
   printf "\nrchat 0.3-2022-04-20: Removed more trash present in some instances, added :news and :instance commands and other small tweaks."
+  printf "\nrchat 0.4-2022-04-24: Added :history, :history clear and other bug fixes."
 }
 
 RCHAT_NEWS()
 {
   curl -so /tmp/rchat-news https://raw.githubusercontent.com/speediegamer/rchat/main/rchat-news  
   cat /tmp/rchat-news | less
+  rm /tmp/rchat-news
 }
 
 RCHAT_INSTANCE_LIST()
 {
   curl -so /tmp/rchat-instance-list https://raw.githubusercontent.com/speediegamer/rchat/main/rchat-instance-list
   cat /tmp/rchat-instance-list | less
+  rm /tmp/rchat-instance-list
 }
 
 RCHAT_CHECK_MODE()
