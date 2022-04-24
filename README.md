@@ -15,6 +15,8 @@ Download the latest binary and copy it to /usr/bin. Then simply make it executab
 - :help // Get help
 - :news // Read news
 - :instance // Find cool instances
+- :history // View all previous messages
+- :history clear // Clear all previous messages
 
 ## Credits
 - donut.gq // rautafarmi
