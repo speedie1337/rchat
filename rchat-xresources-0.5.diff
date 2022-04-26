@@ -1,0 +1,111 @@
+--- rchat-orig	2022-04-26 19:36:30.772429824 +0200
++++ rchat-patch	2022-04-26 19:49:50.970426772 +0200
+@@ -13,6 +13,75 @@ RCHAT_LOGOUT()
+   rm -f /tmp/rchat-joined /tmp/rchat-editor-message ; clear ; ${0} ; RCHAT_EXIT
+ }
+ 
++RCHAT_XRESOURCES()
++{
++  printf "$(xrdb -query -all | grep rchat | sed -r 's/\s+//g' | sed "s|:|=|g" | sed 's/[.]*//g')" > /tmp/rchat-xresources
++ . /tmp/rchat-xresources
++
++ # Check if we should set color 1
++ if [[ "$rchatcolor1" = "" ]]; then
++		COLOR_01=$COLOR_01
++ else
++		COLOR_01=$(printf "\033[${rchatcolor1}m")
++ fi
++ 
++ # Check if we should set color 2
++ if [[ "$rchatcolor2" = "" ]]; then
++		COLOR_02=$COLOR_02
++ else
++		COLOR_02=$(printf "\033[0;${rchatcolor2}m")
++ fi
++ 
++ # Check if we should set color 3
++ if [[ "$rchatcolor3" = "" ]]; then
++		COLOR_03=$COLOR_03
++ else
++		COLOR_03=$(printf "\033[0;${rchatcolor3}m")
++ fi
++ 
++ # Check if we should set color 4
++ if [[ "$rchatcolor4" = "" ]]; then
++		COLOR_04=$COLOR_04
++ else
++		COLOR_04=$(printf "\033[0;${rchatcolor4}m")
++ fi
++ 
++ # Check if we should set color 5
++ if [[ "$rchatcolor5" = "" ]]; then
++		COLOR_05=$COLOR_05
++ else
++		COLOR_05=$(printf "\033[0;${rchatcolor5}m")
++ fi
++ 
++ # Check if we should set color 6
++ if [[ "$rchatcolor6" = "" ]]; then
++		COLOR_06=$COLOR_06
++ else
++		COLOR_06=$(printf "\033[0;${rchatcolor6}m")
++ fi
++
++ # Check if we should set the timeout
++ if [[ "$rchatrefresh" = "" ]]; then
++		REFRESH_TIMEOUT=$REFRESH_TIMEOUT
++ else
++		REFRESH_TIMEOUT=${rchatrefresh}
++ fi
++
++ # Check if we should set the linecount
++ if [[ "$rchatlinecount" = "" ]]; then
++		LINECOUNT=$LINECOUNT
++ else
++		LINECOUNT=$rchatlinecount
++ fi
++
++ # Check if we should set the instance
++ if [[ "$rchatinstance" = "" ]]; then
++		INSTANCE=$INSTANCE
++ else
++		INSTANCE=$rchatinstance
++ fi
++}
++
+ RCHAT_INIT()
+ {
+   DEFAULT_INSTANCE="https://donut.gq/rautafarmi"
+@@ -36,6 +105,13 @@ RCHAT_INIT()
+ 		NICK="anon"
+   fi
+   
++  # Check if we should read from .Xresources
++  if [[ -f "/usr/bin/xrdb" ]]; then
++		RCHAT_XRESOURCES
++  else
++		printf "Not using .Xresources"
++  fi
++
+   MODE=NORMAL
+   RCHAT_URL="$INSTANCE/messages.txt"
+   
+@@ -209,6 +285,18 @@ RCHAT_HELP()
+   printf "\n- To clear the saved history, type ':history clear'."
+   printf "\n- To leave the instance, type ':leave'."
+   printf "\n- To quit rchat (You'll stay logged in), type ':q'."
++  printf "\n\nrchat supports .Xresources. You can set the following options:"
++  printf "\n- rchat.color1:"
++  printf "\n- rchat.color2:"
++  printf "\n- rchat.color3:"
++  printf "\n- rchat.color4:"
++  printf "\n- rchat.color5:"
++  printf "\n- rchat.color6:"
++  printf "\n- rchat.instance:"
++  printf "\n- rchat.refresh:"
++  printf "\n- rchat.linecount:"
++  printf "\nDo not forget to run 'xrdb /path/to/.Xresources' after changing."
++  printf " For the color values, they should be a 1-2 character number from an ANSI escape code."
+ }
+ 
+ RCHAT_CHANGELOG()
