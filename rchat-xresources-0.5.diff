@@ -1,5 +1,5 @@
---- rchat-orig	2022-04-26 19:36:30.772429824 +0200
-+++ rchat-patch	2022-04-26 19:49:50.970426772 +0200
+--- rchat	2022-04-26 19:36:30.772429824 +0200
++++ rchat	2022-04-26 19:49:50.970426772 +0200
 @@ -13,6 +13,75 @@ RCHAT_LOGOUT()
    rm -f /tmp/rchat-joined /tmp/rchat-editor-message ; clear ; ${0} ; RCHAT_EXIT
  }
