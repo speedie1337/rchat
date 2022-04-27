@@ -1,0 +1,32 @@
+--- rchat	2022-04-27 08:56:03.869246821 +0200
++++ rchat	2022-04-27 13:53:20.925080191 +0200
+@@ -99,6 +99,29 @@ RCHAT_CAT_MESSAGES()
+   RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|" | sed "s|<span style='color: #789922;'>||")
+ printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
+ printf "\n\n$INSTANCE $(date '+%Y/%m/%d/%T')\n===================================================\n$RCHAT_FULL_MESSAGE_DATA" >> /tmp/rchat-history
++  
++  RCHAT_NOTIFICATION_DATA=$(cat /tmp/rchat-msg | sed -n 1,2p | sed "s/<span style='color: #2c49c9;'>//" | sed "s/<span style='color: #1c8757;'>/- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| at |" | sed "s|</span>|:|" | sed "s|:<span style='color: #aa2cc9;'>||" | sed "s|</span>|:|" | sed "s|<span style='color: #789922;'>||")
++  
++  # Check if such a message already exists
++  if [[ -f "/tmp/rchat-latest-message" ]]; then
++		  RCHAT_PREVIEW_MESSAGE_EXISTS=true
++  else
++		  printf $RCHAT_NOTIFICATION_DATA > /tmp/rchat-latest-message
++  fi
++
++  RCHAT_PREVIOUS_MESSAGE=$(cat /tmp/rchat-latest-message)
++  printf "$RCHAT_NOTIFICATION_DATA" > /tmp/rchat-latest-message
++
++  # Notification system
++  if [[ "$RCHAT_PREVIOUS_MESSAGE" = "$RCHAT_NOTIFICATION_DATA" ]]; then
++        MESSAGE_UP_TO_DATE=true
++  else
++		notify-send "$RCHAT_NOTIFICATION_DATA"
++  fi
++  
++  printf "$RCHAT_NOTIFICATION_DATA" > /tmp/rchat-latest-notification
++  RCHAT_NOTIFICATION_DATA_UPDATE=$(cat /tmp/rchat-msg | sed -n 1,2p | sed "s/<span style='color: #2c49c9;'>//" | sed "s/<span style='color: #1c8757;'>/- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| at |" | sed "s|</span>|:|" | sed "s|:<span style='color: #aa2cc9;'>||" | sed "s|</span>|:|" | sed "s|<span style='color: #789922;'>||")
++
+ printf "===============================================================================\n"
+ printf "${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
+ printf "===============================================================================\n"
