@@ -8,8 +8,6 @@ help:
 	@echo "make uninstall   Uninstall ${NAME}."
 
 install:
-	mkdir -pv ~/.config/${NAME}
-	touch ~/.config/${NAME}/rchatrc
 	cp ${NAME} ${INSTALL_DIR}
 	chmod +x ${INSTALL_DIR}/${NAME}
 
