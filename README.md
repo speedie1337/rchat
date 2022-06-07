@@ -1,7 +1,7 @@
 # rchat
 ### rchat is a rautafarmi chat client with Vim keybinds written in Bash.
 
-![image](https://user-images.githubusercontent.com/71722170/163872303-82d58b04-3627-476f-b7d1-d1de8583a8c1.png)
+![image](https://user-images.githubusercontent.com/71722170/172469965-9b0d1d2b-f698-4765-874c-171283f7cd38.png)
 
 ## Installation
 Download the latest binary and copy it to /usr/bin. Then simply make it executable.
@@ -23,8 +23,9 @@ Download the latest binary and copy it to /usr/bin. Then simply make it executab
 - me // rchat
 
 ## Screenshots
-![image](https://user-images.githubusercontent.com/71722170/163872303-82d58b04-3627-476f-b7d1-d1de8583a8c1.png)
-![image](https://user-images.githubusercontent.com/71722170/163872344-626078a1-e84d-43c4-962e-ef0fafa2b50c.png)
+![image](https://user-images.githubusercontent.com/71722170/172470021-5b12c580-095d-4e1f-bbb1-92424699237c.png)
+![image](https://user-images.githubusercontent.com/71722170/172470104-f0e3438c-6667-4cf2-8e5c-864db581ddec.png)
+
 
 
 
