@@ -17,3 +17,16 @@ For Arch Linux, you'll install it like any other AUR package or using an AUR hel
 Do not run it as root. That's it, have a good day!
 
 ============================================================================================================
+
+Title: rchat 1.1 is out.
+Date: 24/06/2022
+
+rchat 1.1 is now out. It's a really small update but a necessary update because the header wouldn't display properly.
+This update fixes that issue.
+
+It also makes the ':donate' command actually work (It did previously work but only with xdg-open).
+
+Package manager repositories should be updated soon. Have a good day!
+
+============================================================================================================
+

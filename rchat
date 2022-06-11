@@ -5,12 +5,12 @@
 
 RCHAT_EXIT()
 {
-  rm -f /tmp/rchat-editor-message ; clear ; exit 0
+  rm -f /tmp/rchat-editor-message /tmp/rchat-cchat ; clear ; exit 0
 }
 
 RCHAT_LOGOUT()
 {
-  rm -f /tmp/rchat-joined /tmp/rchat-editor-message /tmp/rchat-msg ; clear ; ${0} ; RCHAT_EXIT
+  rm -f /tmp/rchat-joined /tmp/rchat-editor-message /tmp/rchat-msg /tmp/rchat-cchat ; clear ; ${0} ; RCHAT_EXIT
 }
 
 RCHAT_INIT()
@@ -35,7 +35,7 @@ RCHAT_INIT()
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
   NAME="rchat" # rchat.. simple as that
-  VERSION="1.0-07-06-2022" # Version of rchat
+  VERSION="1.1-12-06-2022" # Version of rchat
   SEP=▀ # Separator that will be used for borders
   SEPCOUNT=$(tput cols)
 
@@ -113,7 +113,7 @@ RCHAT_STARTER_HEADER()
   ":h") RCHAT_HELP | less ;;
   ":help") RCHAT_HELP | less ;;
   ":changelog") RCHAT_CHANGELOG | less ;;
-  ":donate") xdg-open https://speedie.gq/donate ;;
+  ":donate") RCHAT_DONATE && $0 && RCHAT_EXIT ;;
   ":reset") RCHAT_RESET ;;
   esac
   
@@ -125,25 +125,34 @@ RCHAT_STARTER_HEADER()
   fi
 }
 
+RCHAT_DONATE() {
+  if [ -e "/usr/bin/xdg-open" ]; then
+		xdg-open "https://speedie.gq/donate"
+  else
+		$BROWSER "https://speedie.gq/donate"
+ fi
+}
+
 RCHAT_HEADER()
 {
   printf "$NAME $VERSION\n"
   printf "$FSEP"
-  printf "\n\n"
+  #printf "\n\n"
 }
 
 RCHAT_CAT_MESSAGES()
 {
   if [ -e "/tmp/rchat-msg" ]; then
 		RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|" | sed "s|<span style='color: #789922;'>||" | sed "/.\{$MAXCHARACTERCOUNT\}/d" | sed "/^[[:space:]]*$/d")
+		printf "$RCHAT_FULL_MESSAGE_DATA${COLOR_01}" > /tmp/rchat-cchat
 		printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}" >> /tmp/rchat-history
-		printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}"
+		printf "$(head -n "$(expr $(tput lines) "-" 6)" /tmp/rchat-cchat)${COLOR_01}\n" # I hate math in shell.
 		printf "$FSEP"
 		printf "\n${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
 		printf "$FSEP"
 		printf "\n"
   else
-		printf "\n${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nDownloading messages.${COLOR_01}"; sleep 5 && RCHAT_CAT_MESSAGES
+		printf "\n${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nDownloading messages.${COLOR_01}"; sleep 5 && clear && RCHAT_CAT_MESSAGES
   fi
 }
 
@@ -212,7 +221,7 @@ RCHAT_INSERT()
   "INSERT") MODE="INSERT" ;;
   esac
 
-  echo -n "-- $MODE -- > "
+  echo -n "-- $MODE -- "
   read RCHAT_SEND_MESSAGE && RCHAT_MESSAGE_TYPE=normal
 
   # Reload if it's empty
@@ -253,7 +262,7 @@ RCHAT_CMD()
   "news") RCHAT_NEWS | less ;;
   "instance") RCHAT_INSTANCE_LIST | less ;;
   "e") $EDITOR /tmp/rchat-editor-message && RCHAT_MESSAGE_TYPE=editor && RCHAT_SEND_MESSAGE ;;
-  "donate") xdg-open https://speedie.gq/donate && $0 && RCHAT_EXIT ;;
+  "donate") RCHAT_DONATE && $0 && RCHAT_EXIT ;;
   esac
   ${0} && RCHAT_EXIT
 }
@@ -296,10 +305,11 @@ RCHAT_CHANGELOG()
   printf "\n${COLOR_04}rchat 0.4 (Released 2022-04-24): Added :history, :history clear and other bug fixes."
   printf "\n${COLOR_04}rchat 0.5 (Released 2022-04-26): Added :set refreshdelay and other fixes."
   printf "\n${COLOR_04}rchat 1.0 (Released 2022-06-07): 1.0 release, bug fixes, added colors for :help, added config file support, removed useless bash-isms. Also added fancy borders and messages now fit into exactly your terminal size." 
+  printf "\n${COLOR_04}rchat 1.1 (Released 2022-06-12): Fixed terminal size issues and :donate command."
 }
 
 RCHAT_RESET() {
-  rm -rf /tmp/rchat* ~/.config/rchat && ${0} && RCHAT_EXIT
+  rm -rf /tmp/rchat* && rm -rf ~/.config/rchat && ${0} && RCHAT_EXIT
 }
 
 RCHAT_NEWS()
@@ -309,6 +319,7 @@ RCHAT_NEWS()
   rm /tmp/rchat-news
 }
 
+# Print instance list
 RCHAT_INSTANCE_LIST()
 {
   curl -so /tmp/rchat-instance-list https://raw.githubusercontent.com/speediegq/rchat/main/rchat-instance-list
@@ -319,6 +330,7 @@ RCHAT_INSTANCE_LIST()
   fi
 }
 
+# Check what mode we're in
 RCHAT_CHECK_MODE()
 {
   read -t 1 -n 1 MODE

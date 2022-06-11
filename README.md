@@ -4,7 +4,7 @@
 ![image](https://user-images.githubusercontent.com/71722170/172469965-9b0d1d2b-f698-4765-874c-171283f7cd38.png)
 
 ## Installation
-Download the latest binary and copy it to /usr/bin. Then simply make it executable.
+To install, clone the repository and make install.
 
 ## Keybinds
 - :j // Join
@@ -17,6 +17,7 @@ Download the latest binary and copy it to /usr/bin. Then simply make it executab
 - :instance // Find cool instances
 - :history // View all previous messages
 - :history clear // Clear all previous messages
+- For more, see :help
 
 ## Credits
 - donut.gq // rautafarmi
