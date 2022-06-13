@@ -1,4 +1,4 @@
---- rchat-2	2022-06-13 09:47:05.046528474 +0200
+--- rchat	2022-06-13 09:47:05.046528474 +0200
 +++ rchat	2022-06-13 10:24:15.472680433 +0200
 @@ -241,6 +241,23 @@ RCHAT_CHECK_UPDATE()
    ${0} && RCHAT_EXIT # Reset the script if there are new messages
