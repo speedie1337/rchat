@@ -34,8 +34,10 @@ RCHAT_INIT()
   COLOR_04="$(printf '\033[0;36m')" # Blue
   COLOR_05="$(printf '\033[0;33m')" # Orange
   COLOR_06="$(printf '\033[0;31m')" # Red
+  COLOR_07="$(printf '\033[0;32m')" # Green
   NAME="rchat" # rchat.. simple as that
-  VERSION="1.1-12-06-2022" # Version of rchat
+  VER="1.2" # Version of rchat
+  VERSION="$VER-06-14-2022" # Version of rchat
   SEP=▀ # Separator that will be used for borders
   SEPCOUNT=$(tput cols)
 
@@ -48,13 +50,60 @@ RCHAT_INIT()
   
   MODE="-- NORMAL --"
   RCHAT_URL="$INSTANCE/messages.txt"
+
+  RCHAT_WRITE_UPDATE() {
+    if [ -e "/usr/bin/doas" ]; then
+		doas curl -o $0 "https://raw.githubusercontent.com/speediegq/rchat/main/rchat" && $0 && exit 0
+    elif [ -e "/usr/bin/sudo" ]; then
+		sudo curl -o $0 "https://raw.githubusercontent.com/speediegq/rchat/main/rchat" && $0 && exit 0
+    elif [ -e "/bin/su" ]; then
+		su -c "curl -o $0 "https://raw.githubusercontent.com/speediegq/rchat/main/rchat"" root && $0 && exit 0
+    fi
+  }
+
+  RCHAT_UPDATE_CLIENT() {
+    clear
+	printf "${COLOR_02}A new version of rchat ($(curl -s https://raw.githubusercontent.com/speediegq/rchat/main/rchat-latestver)) is available replacing $VER.\n\n${COLOR_03}$(curl -s https://raw.githubusercontent.com/speediegq/rchat/main/rchat-cupdatelog)\n\n${COLOR_02}Would you like to update from $VER? (yes/no/ignore/never/diff)\n${COLOR_01}> "; read UPT_CHOICE
+
+	case "$UPT_CHOICE" in
+	"yes") RCHAT_WRITE_UPDATE ;;
+	"no") LATEST=true ;;
+	"ignore") curl -so /tmp/rchat-ignore-updt https://raw.githubusercontent.com/speediegq/rchat/main/rchat-latestver ;;
+	"never") touch /tmp/rchat-do-not-update ;;
+	"fuck off") touch /tmp/rchat-do-not-update ;;
+	"diff") curl -so /tmp/rchat-newupt https://raw.githubusercontent.com/speediegq/rchat/main/rchat && diff -up /tmp/rchat-newupt $0 | less ;;
+	"") $0 && exit 0 ;;
+	esac
+  }
+
+  # Check for updates
+  if [ "$(curl -s https://raw.githubusercontent.com/speediegq/rchat/main/rchat-latestver)" = "$VER" ]; then
+		LATEST=true
+  else
+		if [ -e "/tmp/rchat-do-not-update" ]; then
+				LATEST=true
+		else
+				if [ -e "/tmp/rchat-ignore-updt" ]; then
+						if [ "$(cat /tmp/rchat-ignore-updt)" = "$(curl -s https://raw.githubusercontent.com/speediegq/rchat/main/rchat-latestver)" ]; then
+								LATEST=true
+						fi
+				fi
+		fi
+  fi
+
+  if [ "$LATEST" = "true" ]; then
+		LATEST=true
+  else
+		RCHAT_UPDATE_CLIENT
+  fi
+		
   
   # Load rchat settings
   if [ -e "/tmp/rchat-settings" ]; then
 		. /tmp/rchat-settings
   fi
 
-  FSEP="$(seq $(tput cols) | xargs -Iz printf "${COLOR_02}$SEP${COLOR_01}")"
+  FSEP="$(seq $(tput cols) | xargs -Iz printf "${COLOR_01}$SEP${COLOR_01}")"
 
   # Download all messages from the instance
   RCHAT_DOWNLOAD_MESSAGES &
@@ -99,7 +148,7 @@ RCHAT_STARTER_HEADER()
   printf "\n${COLOR_04}Type ':j' to join."
   printf "\n${COLOR_03}Type ':set instance' and then enter your instance URL to set an instance."
   printf "\n${COLOR_06}Type ':set instance default' to change it back.${COLOR_01}"
-  printf "\n${COLOR_05}Type ':h' to get help.${COLOR_01}"
+  printf "\n${COLOR_07}Type ':h' to get help.${COLOR_01}"
   printf "\n${COLOR_02}Type ':donate' to donate.${COLOR_01}"
   printf "\nType ':q' to quit.\n"
   read starter_command
@@ -137,16 +186,30 @@ RCHAT_HEADER()
 {
   printf "$NAME $VERSION\n"
   printf "$FSEP"
-  #printf "\n\n"
 }
 
 RCHAT_CAT_MESSAGES()
 {
   if [ -e "/tmp/rchat-msg" ]; then
-		RCHAT_FULL_MESSAGE_DATA=$(cat /tmp/rchat-msg | sed -n 1,$LINECOUNT\p | sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | sed "s|</span>|${COLOR_01}:|" | sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | sed "s|</span>|:${COLOR_03}|" | sed "s|<span style='color: #789922;'>||" | sed "/.\{$MAXCHARACTERCOUNT\}/d" | sed "/^[[:space:]]*$/d")
+		RCHAT_FULL_MESSAGE_DATA="$(cat /tmp/rchat-msg | \
+		sed -n 1,$LINECOUNT\p | \
+		sed "s/<span style='color: #2c49c9;'>/${COLOR_03}/" | \
+		sed "s/<span style='color: #1c8757;'>/${COLOR_05}- /" | \
+		sed "s|</span>||" | \
+		sed "s|</span> <span style='color: #727272;'>| ${COLOR_06}at ${COLOR_04}|" | \
+		sed "s|</span>|${COLOR_01}:|" | \
+		sed "s|:<span style='color: #aa2cc9;'>|${COLOR_03}|" | \
+		sed "s|</span>|:${COLOR_03}|" | \
+		sed "s|<span style='color: #789922;'>||" | \
+		sed "/.\{$MAXCHARACTERCOUNT\}/d" | \
+		sed "/^[[:space:]]*$/d" | \
+		sed "s|&gt;&gt;|${COLOR_05}>>|g" | \
+		sed "s|&gt;|${COLOR_07}>|g" | \
+		sed "s#^#${COLOR_01}#g")"
+
 		printf "$RCHAT_FULL_MESSAGE_DATA${COLOR_01}" > /tmp/rchat-cchat
 		printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}" >> /tmp/rchat-history
-		printf "$(head -n "$(expr $(tput lines) "-" 6)" /tmp/rchat-cchat)${COLOR_01}\n" # I hate math in shell.
+		printf "$(head -n "$(expr $(tput lines) "-" 7)" /tmp/rchat-cchat)${COLOR_01}\n" # I hate math in shell.
 		printf "$FSEP"
 		printf "\n${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat /tmp/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
 		printf "$FSEP"
@@ -195,12 +258,6 @@ RCHAT_CHECK_UPDATE()
 		SEPCOUNT=$(tput cols)
   fi
 
-  if [ "$MAXCHARACTERCOUNT" = "$(tput cols)" ]; then
-		MAXCHARACTERCOUNT=$(tput cols)
-  else
-		MAXCHARACTERCOUNT=$(tput cols)
-  fi
-
   ${0} && RCHAT_EXIT # Reset the script if there are new messages
 }
 
@@ -221,7 +278,8 @@ RCHAT_INSERT()
   "INSERT") MODE="INSERT" ;;
   esac
 
-  echo -n "-- $MODE -- "
+  echo -n "-- $MODE --"
+  echo -ne "\n> "
   read RCHAT_SEND_MESSAGE && RCHAT_MESSAGE_TYPE=normal
 
   # Reload if it's empty
@@ -231,14 +289,6 @@ RCHAT_INSERT()
   esac
 
   RCHAT_SEND_MESSAGE ; ${0} && RCHAT_EXIT
-}
-
-RCHAT_CHECK_UPDATE()
-{
-  case "$(cat /tmp/rchat-msg)" in
-  "$(curl -s $RCHAT_URL)") RCHAT_CHECK_MODE ;;
-  esac
-  ${0} && RCHAT_EXIT # Reset the script if there are new messages
 }
 
 RCHAT_CMD()
@@ -259,6 +309,7 @@ RCHAT_CMD()
   "history") less /tmp/rchat-history ; ${0} && RCHAT_EXIT ;;
   "history clear") rm /tmp/rchat-history ; ${0} && RCHAT_EXIT ;;
   "changelog") RCHAT_CHANGELOG | less ;;
+  "forceupdate") RCHAT_UPDATE_CLIENT ;;
   "news") RCHAT_NEWS | less ;;
   "instance") RCHAT_INSTANCE_LIST | less ;;
   "e") $EDITOR /tmp/rchat-editor-message && RCHAT_MESSAGE_TYPE=editor && RCHAT_SEND_MESSAGE ;;
@@ -270,29 +321,29 @@ RCHAT_CMD()
 # Help screen
 RCHAT_HELP()
 {
-  printf "${COLOR_02}-- rchat help | Use hjkl to read --\n\n"
+  HSEP="-"
+  printf "${COLOR_02}${HSEP}${HSEP} rchat help | Use hjkl to read ${HSEP}${HSEP}\n\n"
   printf "${COLOR_01}rchat is a chat client with Vim keybinds. To enter text, press I at any time.\n"
   printf "When you initially run it from a terminal, you need to join.\n"
   printf "Joining is done using a command. Commands in rchat are used similar to Vim. This means most commands start with ':'.\n\n" 
-  printf "${COLOR_04}-- COMMANDS --${COLOR_01}"
-  printf "-${COLOR_03} To join the set instance, type ':j'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
-  printf "\n-${COLOR_03} To set an instance (Otherwise the default will be used), type ':set instance'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
-  printf "\n-${COLOR_03} If you wanna run a terminal command, type ':!'."
-  printf "\n-${COLOR_03} To see the help screen, do ':h'."
-  printf "\n-${COLOR_03} To change your nickname from '$NICK' to anything you want, ':set nick'."
-  printf "\n-${COLOR_03} To change how often messages are downloaded, ':set refreshdelay'. *PLEASE DO NOT ABUSE THIS*"
-  printf "\n-${COLOR_03} To change separator, ':set sep'."
-  printf "\n-${COLOR_03} To reset settings, ':reset'."
-  printf "\n-${COLOR_03} To change colors, ':set color1', ':set color2', ':set color3', ':set color4', ':set color5', ':set color6'."
-  printf "\n-${COLOR_03} To see the changelog, type ':changelog'."
-  printf "\n-${COLOR_03} To type out a message in your defined $EDITOR, type ':e'."
-  printf "\n-${COLOR_03} To see a list of popular instances, type ':instance'."
-  printf "\n-${COLOR_03} To download and see news, type ':news'."
-  printf "\n-${COLOR_03} To see a full list of all messages downloaded combined, type ':history'."
-  printf "\n-${COLOR_03} To clear the saved history, type ':history clear'."
-  printf "\n-${COLOR_03} To leave the instance, type ':leave'."
-  printf "\n-${COLOR_03} To quit rchat (You'll stay logged in), type ':q'.${COLOR_01}"
-  printf "\n-${COLOR_03} To donate, type ':donate'.${COLOR_01}"
+  printf "${COLOR_04}${HSEP}${HSEP} COMMANDS ${HSEP}${HSEP}${COLOR_01}"
+  printf "\n${HSEP}${COLOR_03} To join the set instance, type ':j'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
+  printf "\n${HSEP}${COLOR_03} To set an instance (Otherwise the default will be used), type ':set instance'. *CAN ONLY BE DONE IF YOU AREN'T ALREADY IN AN INSTANCE*"
+  printf "\n${HSEP}${COLOR_03} If you wanna run a terminal command, type ':!'."
+  printf "\n${HSEP}${COLOR_03} To see the help screen, do ':h'."
+  printf "\n${HSEP}${COLOR_03} To change your nickname from '$NICK' to anything you want, ':set nick'."
+  printf "\n${HSEP}${COLOR_03} To change how often messages are downloaded, ':set refreshdelay'. *PLEASE DO NOT ABUSE THIS*"
+  printf "\n${HSEP}${COLOR_03} To change separator, ':set sep'."
+  printf "\n${HSEP}${COLOR_03} To reset settings, ':reset'."
+  printf "\n${HSEP}${COLOR_03} To see the changelog, type ':changelog'."
+  printf "\n${HSEP}${COLOR_03} To type out a message in your defined $EDITOR, type ':e'."
+  printf "\n${HSEP}${COLOR_03} To see a list of popular instances, type ':instance'."
+  printf "\n${HSEP}${COLOR_03} To download and see news, type ':news'."
+  printf "\n${HSEP}${COLOR_03} To see a full list of all messages downloaded combined, type ':history'."
+  printf "\n${HSEP}${COLOR_03} To clear the saved history, type ':history clear'."
+  printf "\n${HSEP}${COLOR_03} To leave the instance, type ':leave'. (You can also do ZQ)"
+  printf "\n${HSEP}${COLOR_03} To quit rchat (You'll stay logged in), type ':q'. (You can also do ZZ)${COLOR_01}"
+  printf "\n${HSEP}${COLOR_03} To donate, type ':donate'.${COLOR_01}"
 }
 
 RCHAT_CHANGELOG()
@@ -306,6 +357,7 @@ RCHAT_CHANGELOG()
   printf "\n${COLOR_04}rchat 0.5 (Released 2022-04-26): Added :set refreshdelay and other fixes."
   printf "\n${COLOR_04}rchat 1.0 (Released 2022-06-07): 1.0 release, bug fixes, added colors for :help, added config file support, removed useless bash-isms. Also added fancy borders and messages now fit into exactly your terminal size." 
   printf "\n${COLOR_04}rchat 1.1 (Released 2022-06-12): Fixed terminal size issues and :donate command."
+  printf "\n${COLOR_04}rchat 1.2 (Released 2022-06-14): New auto update feature added, :h command improved, ZZ and ZQ can now be used instead of :q and :leave, and other improvements to insert mode and borders."
 }
 
 RCHAT_RESET() {
@@ -330,6 +382,15 @@ RCHAT_INSTANCE_LIST()
   fi
 }
 
+RCHAT_Z_EXIT() {
+  read -n 1 MODE
+  case "$MODE" in
+  "") MODE="NORMAL" && RCHAT_CHECK_UPDATE ;;
+  "Q") RCHAT_LOGOUT ;;
+  "Z") RCHAT_EXIT ;;
+  esac
+}
+
 # Check what mode we're in
 RCHAT_CHECK_MODE()
 {
@@ -338,6 +399,7 @@ RCHAT_CHECK_MODE()
   "i") MODE="INSERT" && RCHAT_INSERT ;;
   "") MODE="NORMAL" && RCHAT_CHECK_UPDATE ;;
   ":") RCHAT_CMD ;;
+  "Z") RCHAT_Z_EXIT ;;
   "q") RCHAT_EXIT ;;
   "l") RCHAT_LOGOUT ;;
 esac
