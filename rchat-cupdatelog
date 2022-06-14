@@ -1,0 +1,8 @@
+rchat 1.2 changes:
+- New auto update feature (can easily be permanently disabled)
+- Improved :h command
+- ZZ now does :q
+- ZQ now does :leave
+- Improvements to insert mode
+- Default colors changed for borders
+- Other small changes (see diff)
