@@ -1,0 +1,23 @@
+--- rchat	2022-06-22 21:15:20.216882771 +0200
++++ rchat	2022-06-22 21:10:55.746890227 +0200
+@@ -139,10 +139,20 @@ RCHAT_DOWNLOAD_MESSAGES()
+ RCHAT_STARTER_HEADER()
+ {
+   clear
++
+   printf "$NAME $VERSION\n"
+   printf "$FSEP"
+   printf "\n\n"
+   printf "${COLOR_02}Last login: $(date '+%Y/%m/%d at %T')${COLOR_01}"
++  
++  # Print art if present.
++  # You can create art from images using "https://manytools.org/hacker-tools/convert-images-to-ascii-art/go/"
++  # You can use ANSI escape codes if your terminal supports it.
++  # You can also print plain text if you want.
++  if [ -e "$HOME/.config/rchat/rchat_art" ]; then
++		cat ~/.config/rchat/rchat_art
++  fi
++  
+   printf "\n\nWelcome to $NAME $VERSION. $NAME is a rautafarmi chat client with Vim keybinds."
+   printf "\n${COLOR_02}rchat is licensed under the GNU GPLv3 license. Client written by speedie & potential contributors, rautafarmi is owned by donut.gq.\n${COLOR_01}"
+   printf "\n${COLOR_04}Type ':j' to join."
