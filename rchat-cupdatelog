@@ -1,8 +1,5 @@
-rchat 1.2 changes:
-- New auto update feature (can easily be permanently disabled)
-- Improved :h command
-- ZZ now does :q
-- ZQ now does :leave
-- Improvements to insert mode
-- Default colors changed for borders
-- Other small changes (see diff)
+rchat 1.3 changes:
+- Fix stupid problem where files are saved to /tmp meaning they're reset on every reboot. This means:
+  - Auto updating will not work properly. With this release, rchat will no longer complain if you already picked "never" or "ignore".
+  - Instances now save properly.
+  - Potentially other issues are resolved.
