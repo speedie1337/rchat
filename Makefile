@@ -1,5 +1,5 @@
 SHELL = /bin/sh
-VER = 1.2
+VER = 1.3
 INSTALL_DIR =/usr/bin
 NAME = rchat
 
