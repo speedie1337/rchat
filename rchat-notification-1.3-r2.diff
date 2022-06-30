@@ -1,0 +1,31 @@
+--- rchat.orig	2022-06-07 19:35:12.899870908 +0200
++++ rchat	2022-06-07 19:39:11.223867627 +0200
+@@ -142,6 +142,28 @@ RCHAT_CAT_MESSAGES()
+ 		printf "\n${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat $HOME/.config/rchat/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
+ 		printf "$FSEP"
+ 		printf "\n"
++
++        RCHAT_NOTIFICATION_DATA=$(cat $HOME/.config/rchat/rchat-msg | sed -n 1,2p | sed "s/<span style='color: #2c49c9;'>//" | sed "s/<span style='color: #1c8757;'>/- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| at |" | sed "s|</span>|:|" | sed "s|:<span style='color: #aa2cc9;'>||" | sed "s|</span>|:|" | sed "s|<span style='color: #789922;'>||")
++ 
++        # Check if such a message already exists
++        if [ -e "$HOME/.config/rchat/rchat-latest-message" ]; then
++				RCHAT_PREVIEW_MESSAGE_EXISTS=true
++		else
++				printf $RCHAT_NOTIFICATION_DATA > $HOME/.config/rchat/rchat-latest-message
++        fi
++ 
++        RCHAT_PREVIOUS_MESSAGE=$(cat $HOME/.config/rchat/rchat-latest-message)
++        printf "$RCHAT_NOTIFICATION_DATA" > $HOME/.config/rchat/rchat-latest-message
++ 
++        # Notification system
++        if [ "$RCHAT_PREVIOUS_MESSAGE" = "$RCHAT_NOTIFICATION_DATA" ]; then
++				MESSAGE_UP_TO_DATE=true
++		else
++				notify-send "$RCHAT_NOTIFICATION_DATA"
++		fi
++ 
++        printf "$RCHAT_NOTIFICATION_DATA" > $HOME/.config/rchat/rchat-latest-notification
++        RCHAT_NOTIFICATION_DATA_UPDATE=$(cat $HOME/.config/rchat/rchat-msg | sed -n 1,2p | sed "s/<span style='color: #2c49c9;'>//" | sed "s/<span style='color: #1c8757;'>/- /" | sed "s|</span>||" | sed "s|</span> <span style='color: #727272;'>| at |" | sed "s|</span>|:|" | sed "s|:<span style='color: #aa2cc9;'>||" | sed "s|</span>|:|" | sed "s|<span style='color: #789922;'>||")
+   else
+ 		printf "\n${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nDownloading messages.${COLOR_01}"; sleep 5 && RCHAT_CAT_MESSAGES
+   fi
