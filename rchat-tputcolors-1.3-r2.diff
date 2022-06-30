@@ -1,0 +1,23 @@
+--- rchat	2022-06-29 20:28:40.231800186 +0200
++++ rchat	2022-06-30 02:56:30.248454764 +0200
+@@ -28,13 +28,13 @@ RCHAT_INIT()
+   REFRESH_TIMEOUT=3
+   LINECOUNT="$(expr $(tput lines) "-" 4)" # How many lines to print
+   MAXCHARACTERCOUNT="$(tput cols)"
+-  COLOR_01="$(printf '\033[0m')" # White
+-  COLOR_02="$(printf '\033[0;33m')" # Yellow
+-  COLOR_03="$(printf '\033[0;35m')" # Purple
+-  COLOR_04="$(printf '\033[0;36m')" # Blue
+-  COLOR_05="$(printf '\033[0;33m')" # Orange
+-  COLOR_06="$(printf '\033[0;31m')" # Red
+-  COLOR_07="$(printf '\033[0;32m')" # Green
++  COLOR_01="$(tput sgr0)" # White
++  COLOR_02="$(tput setaf 178)" # Yellow
++  COLOR_03="$(tput setaf 183)" # Purple
++  COLOR_04="$(tput setaf 055)" # Blue
++  COLOR_05="$(tput setaf 214)" # Orange
++  COLOR_06="$(tput setaf 196)" # Red
++  COLOR_07="$(tput setaf 112)" # Green
+   NAME="rchat" # rchat.. simple as that
+   VER="1.3-r2" # Version of rchat
+   VERSION="$VER-06-29-2022" # Version of rchat
