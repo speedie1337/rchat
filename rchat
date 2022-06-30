@@ -15,6 +15,7 @@ RCHAT_LOGOUT()
 
 RCHAT_INIT()
 {
+  mkdir -p $HOME/.config/rchat > /dev/null
   DEFAULT_INSTANCE="https://donut.gq/rautafarmi"
   
   # Set instance if one already exists
@@ -36,7 +37,7 @@ RCHAT_INIT()
   COLOR_06="$(printf '\033[0;31m')" # Red
   COLOR_07="$(printf '\033[0;32m')" # Green
   NAME="rchat" # rchat.. simple as that
-  VER="1.3-r2" # Version of rchat
+  VER="1.4" # Version of rchat
   VERSION="$VER-06-29-2022" # Version of rchat
   SEP=▀ # Separator that will be used for borders
   SEPCOUNT=$(tput cols)
@@ -349,9 +350,9 @@ RCHAT_HELP()
 RCHAT_CHANGELOG()
 {
   printf "${COLOR_04}rchat 0.1 (Released 2022-04-18): Initial release"
-  printf "\n${COLOR_04}rchat 0.1 (Released 2022-04-18-r2): Added color support, writing messages in \$EDITOR and config file"
+  printf "\n${COLOR_04}rchat 0.1-r2 (Released 2022-04-18): Added color support, writing messages in \$EDITOR and config file"
   printf "\n${COLOR_04}rchat 0.2 (Released 2022-04-19): Added custom instance support and fixed sysop garbage being printed when it shouldn't. Also performed other minor improvements."
-  printf "\n${COLOR_04}rchat 0.2 (Released 2022-04-19-r2): Small aesthetic tweaks and defined \$EDITOR if it wasn't already."
+  printf "\n${COLOR_04}rchat 0.2-r2 (Released 2022-04-19): Small aesthetic tweaks and defined \$EDITOR if it wasn't already."
   printf "\n${COLOR_04}rchat 0.3 (Released 2022-04-20): Removed more trash present in some instances, added :news and :instance commands and other small tweaks."
   printf "\n${COLOR_04}rchat 0.4 (Released 2022-04-24): Added :history, :history clear and other bug fixes."
   printf "\n${COLOR_04}rchat 0.5 (Released 2022-04-26): Added :set refreshdelay and other fixes."
@@ -359,6 +360,8 @@ RCHAT_CHANGELOG()
   printf "\n${COLOR_04}rchat 1.1 (Released 2022-06-12): Fixed terminal size issues and :donate command."
   printf "\n${COLOR_04}rchat 1.2 (Released 2022-06-14): New auto update feature added, :h command improved, ZZ and ZQ can now be used instead of :q and :leave, and other improvements to insert mode and borders."
   printf "\n${COLOR_04}rchat 1.3 (Released 2022-06-23): Fixed VERY stupid mistake. That's it."
+  printf "\n${COLOR_04}rchat 1.3-r2 (Released 2022-06-29): Fixed even stupider mistake. That's it."
+  printf "\n${COLOR_04}rchat 1.4 (Released 2022-06-30): Fixed small bugs, shouldn't break patches though."
 }
 
 RCHAT_RESET() {

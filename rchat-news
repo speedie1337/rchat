@@ -1,5 +1,6 @@
 rchat news
 This file will be regularly updated. You can read using rchat 0.3 and newer itself by running :news.
+============================================================================================================
 
 Title: rchat can now be downloaded and installed using package managers
 Date: 24/04/2022
@@ -31,7 +32,7 @@ Package manager repositories should be updated soon. Have a good day!
 ============================================================================================================
 
 Title: rchat 1.2 is out.
-Date; 15/26/2022
+Date; 15/06/2022
 
 rchat 1.2 is here! This release adds:
 
@@ -56,3 +57,17 @@ To install, simply:
 You can also clone the GitHub repository and make install.
 
 If you prefer and run an Arch/Gentoo based distro, you can install rchat from the AUR for Arch based distros and from the splay overlay for Gentoo based distros.
+
+============================================================================================================
+
+Title: rchat 1.4 is out.
+Date; 30/06/2022
+
+rchat 1.4 is out. rchat 1.3 and 1.3-r2 also released earlier but they were small updates so I didn't bother making a 'news' article for them.
+Either way, 1.4 just like 1.3 and 1.3-r2 that came before it are small bug fix updates. This is because rchat is mostly complete.
+
+Any missing features should be added in the form of patches so the official version doesn't have a bunch of unnecessary features.
+
+To update, see https://speedie.gq/rchat.
+
+Have a good day!

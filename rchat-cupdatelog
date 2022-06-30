@@ -1,2 +1,3 @@
-rchat 1.3-r2 changes:
-- Fix the stupidest thing I've ever done in my life (Replaced /home/anon with $HOME)
+rchat 1.4 changes:
+- Fix small bugs if $HOME/.config/rchat is not present.
+- Small improvements to :changelog command.
