@@ -5,7 +5,8 @@
 
 RCHAT_EXIT()
 {
-  rm -f $HOME/.config/rchat/rchat-editor-message $HOME/.config/rchat/rchat-cchat ; clear ; exit 0
+  ENDMSG="rchat terminated. (exit code 0)"
+  rm -f $HOME/.config/rchat/rchat-editor-message $HOME/.config/rchat/rchat-cchat ; clear ; echo $ENDMSG ; exit 0
 }
 
 RCHAT_LOGOUT()
@@ -37,7 +38,7 @@ RCHAT_INIT()
   COLOR_06="$(printf '\033[0;31m')" # Red
   COLOR_07="$(printf '\033[0;32m')" # Green
   NAME="rchat" # rchat.. simple as that
-  VER="1.4" # Version of rchat
+  VER="1.41" # Version of rchat
   VERSION="$VER-06-29-2022" # Version of rchat
   SEP=▀ # Separator that will be used for borders
   SEPCOUNT=$(tput cols)
@@ -210,8 +211,8 @@ RCHAT_CAT_MESSAGES()
 
 		printf "$RCHAT_FULL_MESSAGE_DATA${COLOR_01}" > $HOME/.config/rchat/rchat-cchat
 		printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}" >> $HOME/.config/rchat/rchat-history
-		printf "$(head -n "$(expr $(tput lines) "-" 7)" $HOME/.config/rchat/rchat-cchat)${COLOR_01}\n" # I hate math in shell.
-		printf "$FSEP"
+		head -n "$(expr $(tput lines) "-" 7)" $HOME/.config/rchat/rchat-cchat
+		printf "${COLOR_01}$FSEP"
 		printf "\n${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat $HOME/.config/rchat/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
 		printf "$FSEP"
 		printf "\n"

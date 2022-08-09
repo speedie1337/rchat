@@ -1,3 +1,2 @@
-rchat 1.4 changes:
-- Fix small bugs if $HOME/.config/rchat is not present.
-- Small improvements to :changelog command.
+rchat 1.41 changes:
+- Fix bug with head command, not sure what caused it but it should be fixed now.
