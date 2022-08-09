@@ -1,0 +1,76 @@
+--- rchat-orig	2022-08-10 00:55:51.950021179 +0200
++++ rchat	2022-08-10 01:05:55.451973376 +0200
+@@ -28,7 +28,7 @@ RCHAT_INIT()
+ 
+   INSTANCE=$(cat $HOME/.config/rchat/rchat-instance)
+   REFRESH_TIMEOUT=3
+-  LINECOUNT="$(expr $(tput lines) "-" 4)" # How many lines to print
++  LINECOUNT="$(expr $(tput lines) "-" 1)" # How many lines to print
+   MAXCHARACTERCOUNT="$(tput cols)"
+   COLOR_01="$(printf '\033[0m')" # White
+   COLOR_02="$(printf '\033[0;33m')" # Yellow
+@@ -184,12 +184,6 @@ RCHAT_DONATE() {
+  fi
+ }
+ 
+-RCHAT_HEADER()
+-{
+-  printf "$NAME $VERSION\n"
+-  printf "$FSEP"
+-}
+-
+ RCHAT_CAT_MESSAGES()
+ {
+   if [ -e "$HOME/.config/rchat/rchat-msg" ]; then
+@@ -209,13 +203,9 @@ RCHAT_CAT_MESSAGES()
+ 		sed "s|&gt;|${COLOR_07}>|g" | \
+ 		sed "s#^#${COLOR_01}#g")"
+ 
+-		printf "$RCHAT_FULL_MESSAGE_DATA${COLOR_01}" > $HOME/.config/rchat/rchat-cchat
++		printf "$RCHAT_FULL_MESSAGE_DATA${COLOR_01}\n" > $HOME/.config/rchat/rchat-cchat
+ 		printf "$RCHAT_FULL_MESSAGE_DATA\n\n${COLOR_01}" >> $HOME/.config/rchat/rchat-history
+-		head -n "$(expr $(tput lines) "-" 7)" $HOME/.config/rchat/rchat-cchat
+-		printf "${COLOR_01}$FSEP"
+-		printf "\n${COLOR_04}I: $INSTANCE L: $LINECOUNT/$(cat $HOME/.config/rchat/rchat-msg | wc -l) LL: $(date '+%Y/%m/%d at %T')${COLOR_01}\n"
+-		printf "$FSEP"
+-		printf "\n"
++		head -n $(tput lines) $HOME/.config/rchat/rchat-cchat
+   else
+ 		printf "\n${COLOR_06}\n000 - SYSTEM at $(date '+%Y/%m/%d %T:')\nDownloading messages.${COLOR_01}"; sleep 5 && clear && RCHAT_CAT_MESSAGES
+   fi
+@@ -224,9 +214,7 @@ RCHAT_CAT_MESSAGES()
+ RCHAT_GREP_MESSAGES()
+ {
+   clear
+-  RCHAT_HEADER # Print the header/banner
+   RCHAT_CAT_MESSAGES # Print the messages
+-  RCHAT_FOOTER # Print the footer/banner
+   printf " $MODE \n" # Print the default mode
+   RCHAT_CHECK_UPDATE
+ }
+@@ -266,7 +254,6 @@ RCHAT_CHECK_UPDATE()
+ RCHAT_GREP_MESSAGES()
+ {
+   clear
+-  RCHAT_HEADER # Print the header/banner
+   RCHAT_CAT_MESSAGES # Print the messages
+   printf " $MODE " # Print the default mode
+   RCHAT_CHECK_UPDATE
+@@ -274,7 +261,7 @@ RCHAT_GREP_MESSAGES()
+ 
+ RCHAT_INSERT()
+ {
+-  clear && RCHAT_HEADER && RCHAT_CAT_MESSAGES
++  clear && RCHAT_CAT_MESSAGES
+ 
+   case "$MODE" in
+   "INSERT") MODE="INSERT" ;;
+@@ -295,7 +282,7 @@ RCHAT_INSERT()
+ 
+ RCHAT_CMD()
+ {
+-  clear && RCHAT_HEADER && RCHAT_CAT_MESSAGES
++  clear && RCHAT_CAT_MESSAGES
+   echo -n ":" && read CMD
+   case "$CMD" in
+   "q") RCHAT_EXIT ;;
